@@ -39,6 +39,7 @@ public class Product {
     // 4-1. 기본값 prod_nm varchar(255) 으로 들어가고, 아래처럼 변경가능
     //      length = 30 (varchar(30)), nullable = false (not null)
     @Column(name = "prod_nm", length = 30, nullable = false)
+    @Setter
     private String name; // 상품명
 
     @Column(name = "price")
@@ -49,6 +50,7 @@ public class Product {
     //      STRING 은 저장시 enum의 문자열
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Setter
     private Category category; // 상품 카테고리
 
     // 4-3. INSERT 시 자동으로 서버시간 저장

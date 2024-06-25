@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static com.spring.jpastudy.chap01.entity.Product.Category.*;
+import com.spring.jpastudy.chap01.entity.Product;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -133,5 +134,32 @@ class ProductRepositoryTest {
         System.out.println("\n\n\n");
 
         assertEquals(4, productList.size());
+    }
+
+    // 11. 테스트 생성
+    @Test
+    @DisplayName("2번 상품의 이름과 카테고리를 수정한다")
+    void modifyTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        Long id = 2L;
+        String newName = "청소기";
+        Product.Category newCategory = ELECTRONIC;
+
+        //when - 테스트 상황
+
+        /*
+            JPA 에서는 수정메소드를 따로 제공하지 않는다.
+            - 단일 조회를 수행한 후 setter 을 통해 값을 변경한 후,
+            - 다시 save 를 하면 INSERT 대신 UPDATE 문이 나간다.
+         */
+        Product product = productRepository.findById(id).orElse(null);
+        product.setName(newName);
+        product.setCategory(newCategory);
+
+        Product saved = productRepository.save(product);
+
+        //then - 테스트 결과 단언
+        assertEquals(newName, saved.getName());
     }
 }
