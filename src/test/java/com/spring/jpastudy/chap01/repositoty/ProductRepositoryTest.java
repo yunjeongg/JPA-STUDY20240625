@@ -9,6 +9,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.Optional;
+
+import static com.spring.jpastudy.chap01.entity.Product.Category.*;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 // 1. @SpringBootTest 붙여주기
@@ -25,6 +30,36 @@ class ProductRepositoryTest {
     // 4. 테스트 할 클래스 필드로 생성
     ProductRepository productRepository;
 
+    // 7.
+    @BeforeEach
+    void insertBeforeEach () {
+        Product p1 = Product.builder()
+                .name("아이폰")
+                .category(ELECTRONIC)
+                .price(2000000)
+                .build();
+        Product p2 = Product.builder()
+                .name("탕수육")
+                .category(FOOD)
+                .price(20000)
+                .build();
+        Product p3 = Product.builder()
+                .name("구두")
+                .category(FASHION)
+                .price(300000)
+                .build();
+        Product p4 = Product.builder()
+                .name("주먹밥")
+                .category(FOOD)
+                .price(1500)
+                .build();
+
+        productRepository.save(p1);
+        productRepository.save(p2);
+        productRepository.save(p3);
+        productRepository.save(p4);
+    }
+
     // 6. 테스트 생성
     @Test
     @DisplayName("상품을 데이터베이스에 저장한다.")
@@ -32,7 +67,7 @@ class ProductRepositoryTest {
         // gwt 패턴
         //given - 테스트에 주어질 데이터
         Product product = Product.builder()
-                                            .name("정장")
+                                            .name("떡볶이")
                                             .price(120000)
                                             .category(Product.Category.FASHION)
                                             .build();
@@ -45,4 +80,58 @@ class ProductRepositoryTest {
         assertNotNull(saved);
     }
 
+    // 8. 테스트 생성
+    @Test
+    @DisplayName("1번 상품을 삭제한다.")
+    void deleteTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        Long id = 1L;
+        
+        //when - 테스트 상황
+        productRepository.deleteById(id);
+        
+        //then - 테스트 결과 단언
+        // 만약 찾지 못할 경우 null을 반환한다.
+        Product foundProduct = productRepository.findById(id)
+                .orElse(null);
+
+        assertNull(foundProduct);
+    }
+
+    // 9. 테스트 생성
+    @Test
+    @DisplayName("3번 상품을 단일조회하면 그 상품명이 구두이다")
+    void findOneTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        Long id = 3L;
+
+        //when - 테스트 상황
+        Product foundProduct = productRepository.findById(id).orElse(null);
+
+        //then - 테스트 결과 단언
+        assertEquals("구두", foundProduct.getName());
+        System.out.println("\n\n\nfoundProduct = " + foundProduct + "\n\n\n");
+    }
+
+    // 10. 테스트 생성
+    @Test
+    @DisplayName("상품을 전체조회하면 상품의 총 개수가 4개이다.")
+    void findAllTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+
+        //when - 테스트 상황
+        List<Product> productList = productRepository.findAll();
+
+        //then - 테스트 결과 단언
+        System.out.println("\n\n\n");
+
+        productList.forEach(System.out::println);
+
+        System.out.println("\n\n\n");
+
+        assertEquals(4, productList.size());
+    }
 }

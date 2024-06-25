@@ -8,7 +8,11 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-@Getter @ToString
+@Getter
+// 7. @ToString 의 exclude
+@ToString(exclude = "nickName") // 보여주는 것 중 nickName 제외하겠다.
+// @ToString(exclude = {"nickName", "price"}) // 보여주는 것 중 여러가지 제외할 땐 {} 사용
+
 @EqualsAndHashCode(of = "id") // 필드명 id 를 가지고 판단하겠다.
 // @EqualsAndHashCode(of = {"id", "name") // id 와 name 이 같은 경우 같은객체
 @NoArgsConstructor
