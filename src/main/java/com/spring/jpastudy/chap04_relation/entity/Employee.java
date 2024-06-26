@@ -41,6 +41,11 @@ public class Employee {
     @JoinColumn(name = "dept_id") // (name = "해당 필드(테이블) 의 pk의 @Column(name = "dept_name")
     private Department department; // 부서의 모든 정보를 갖고 있기
 
+    public void changeDepartment(Department department) {
+        this.department = department;
+        department.getEmployees().add(this);
+    }
+
 //    // 1-4-3.
 //    @Override
 //    public String toString() {
