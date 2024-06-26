@@ -14,8 +14,10 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-//@Transactional
-//@Rollback
+// JPA 에서 테스트 할 때는 무조건 @Transactional, @Rollback 둘 다 붙이기
+// 만약 기록하고 싶지 않다면 @Rollback(false) 만 추가하면 된다.
+@Transactional
+@Rollback(value = false)
 class StudentRepositoryTest {
 
     @Autowired
@@ -114,5 +116,55 @@ class StudentRepositoryTest {
         System.out.println("\n\n\n");
         students.forEach(System.out::println);
         System.out.println("\n\n\n");
+    }
+
+    @Test
+    @DisplayName("JPQL로 학생 조회하기")
+    void jpqlTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        String city = "제주도";
+
+        //when - 테스트 상황
+        Student student = studentRepository.getByCityWithJPQL(city)
+                .orElseThrow(()-> new RuntimeException("조회된 학생이 없어요.")); // 학생이 조회가 안 될 경우 예외를 발생시키기
+
+        //then - 테스트 결과 단언
+        assertNotNull(student);
+        // 에러 발생시키는 테스트를 할 때 에러가 나면 통과시키기
+//        assertThrows(RuntimeException.class, ()-> new RuntimeException());
+
+        System.out.println("\n\n\nstudent = " + student + "\n\n\n");
+    }
+
+    @Test
+    @DisplayName("JPQL로 이름이 포함된 학생목록 조회하기")
+    void jpqlTest2() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        String containingName = "춘";
+
+        //when - 테스트 상황
+        List<Student> students = studentRepository.searchByNameWithJPQL(containingName);
+
+        //then - 테스트 결과 단언
+        System.out.println("\n\n\n");
+        students.forEach(System.out::println);
+        System.out.println("\n\n\n");
+    }
+
+    @Test
+    @DisplayName("JPQL로 삭제하기")
+    void deleteJpqlTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        String name = "어피치";
+        String city = "제주도";
+
+        //when - 테스트 상황
+        studentRepository.deleteByNameAndCityWithJPQL(name, city);
+
+        //then - 테스트 결과 단언
+        assertEquals(0, studentRepository.findByName(name).size());
     }
 }

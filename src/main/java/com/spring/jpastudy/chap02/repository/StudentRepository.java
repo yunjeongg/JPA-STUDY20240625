@@ -2,6 +2,7 @@ package com.spring.jpastudy.chap02.repository;
 
 import com.spring.jpastudy.chap02.entity.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -41,6 +42,10 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     // where age <=?
 //    List<Student> findByAgeLessThanEqual(int age);
 
+
+
+
+
     // 7. native sql 사용하기 (순수하게 sql문 작성하기)
     // value - sql문 작성하고, ? 에는 (:임의의 이름) 으로 지어주기), nativeQuery = true)
     // @Query(value = "SELECT * FROM tbl_student WHERE stu_name= ? or city= ?, nativeQuery = true)
@@ -56,4 +61,31 @@ public interface StudentRepository extends JpaRepository<Student, String> {
     List<Student> getStudentByNameOrCity2(String name, String city);
 
 
+    /*
+        - JPQL
+
+        SELECT 엔터티별칭
+        FROM 엔터티클래스명 AS 엔터티별칭
+        WHERE 별칭.필드명
+
+        ex) native - SELECT * FROM tbl_student WHERE stu_name = ?
+            JPQL   - SELECT st FROM Student AS st WHERE st.name = ?
+     */
+
+    // 9.JPQL 사용하기 (순수하게 sql문 작성하기)
+    // 도시명으로 학생 1명을 단일조회하기
+    // 9-2.
+    // @Query(value = "", nativeQuery = false) -- nativeQuery = false 는 생략 가능
+    @Query(value = "SELECT st FROM Student st WHERE st.city=?1")
+    // 9-1. Optional<> - null 이 발생할 수 있는 값을 감싸서 NPE(NullPointerException) 발생을 방지할 수 있다.
+    Optional<Student> getByCityWithJPQL(String city);
+
+    // 10. 특정 이름이 포함된 학생 리스트 조회하기
+    @Query("SELECT stu FROM Student stu WHERE stu.name LIKE %?1%")
+    List<Student> searchByNameWithJPQL(String name);
+
+    // 11. JPQL 로 갱신 처리하기
+    @Modifying // 11-1. JPQL 에서 SELECT 이외를 처리할 경우 무조건 붙여야 한다.
+    @Query("DELETE FROM Student s WHERE s.name= ?1 AND s.city = ?2")
+    void deleteByNameAndCityWithJPQL(String name, String city);
 }
