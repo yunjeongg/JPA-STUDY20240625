@@ -14,8 +14,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-@Transactional
-@Rollback
+//@Transactional
+//@Rollback
 class StudentRepositoryTest {
 
     @Autowired
@@ -47,7 +47,7 @@ class StudentRepositoryTest {
     }
 
     @Test
-    @DisplayName("")
+    @DisplayName("dummy test")
     void dummyTest() {
         //given
 
@@ -59,14 +59,13 @@ class StudentRepositoryTest {
     @Test
     @DisplayName("이름이 춘식이인 학생의 모든 정보를 조회한다.")
     void findByNameTest() {
-        // gwt 패턴
-        //given - 테스트에 주어질 데이터
+        //given
         String name = "춘식이";
 
-        //when - 테스트 상황
+        //when
         List<Student> students = studentRepository.findByName(name);
 
-        //then - 테스트 결과 단언
+        //then
         assertEquals(1, students.size());
 
         System.out.println("\n\n\n\n");
@@ -74,5 +73,46 @@ class StudentRepositoryTest {
         System.out.println("\n\n\n\n");
     }
 
+    @Test
+    @DisplayName("도시이름과 전공으로 학생을 조회")
+    void findByCityAndMajorTest() {
+        //given
+        String city = "제주도";
+        String major = "화학공학";
+        //when
+        List<Student> students = studentRepository.findByCityAndMajor(city, major);
 
+        //then
+        System.out.println("\n\n\n\n");
+        System.out.println("students.get(0) = " + students.get(0));
+        System.out.println("\n\n\n\n");
+    }
+
+    @Test
+    @DisplayName("전공이 공학으로 끝나는 학생들 조회")
+    void findByMajorContainingTest() {
+        //given
+        String majorContaining = "공학";
+        //when
+        List<Student> students = studentRepository.findByMajorContaining(majorContaining);
+        //then
+        System.out.println("\n\n\n");
+        students.forEach(System.out::println);
+        System.out.println("\n\n\n");
+    }
+
+    @Test
+    @DisplayName("도시 또는 이름으로 학생을 조회")
+    void nativeSQLTest() {
+        //given
+        String name = "춘식이";
+        String city = "제주도";
+        //when
+        List<Student> students = studentRepository.getStudentByNameOrCity2(name, city);
+
+        //then
+        System.out.println("\n\n\n");
+        students.forEach(System.out::println);
+        System.out.println("\n\n\n");
+    }
 }
