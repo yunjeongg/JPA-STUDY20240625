@@ -87,12 +87,21 @@ class EmployeeRepositoryTest {
 
             SELECT 문을 보고 싶을 경우 1. 더미데이터 @BeforeEach 주석처리하고, 2. application.yml 의 16줄 ddl-auto: update 로 교체
             --> Join 쿼리가 실행된다.
+
+            단방향 연관 관계는 한 쪽 엔티티만 다른 쪽 엔티티를 참조하는 관계입니다.
+            이를 통해 해당 엔티티는 관련된 엔티티를 조회할 수 있지만, 반대 방향으로는 조회할 수 없습니다.
+
+            JPA에서는 연관된 엔티티를 로드하는 방식으로 LAZY 로딩과 EAGER 로딩이 있다.
          */
         
         //then - 테스트 결과 단언
         System.out.println("\n\n\n");
         System.out.println("employee = " + employee);
         System.out.println("\n\n\n");
+
+        // 1-6.
+        Department department = employee.getDepartment();
+        System.out.println("department = " + department);
     }
 
 
