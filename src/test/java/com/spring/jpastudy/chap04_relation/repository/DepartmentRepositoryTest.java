@@ -87,4 +87,51 @@ class DepartmentRepositoryTest {
         employees.forEach(System.out::println);
         System.out.println("\n\n\n\n");
     }
+
+    // 양방향 연관관계에서 리스트에 데이터 갱신 시 주의사항
+    @Test
+    @DisplayName("고아 객체 삭제하기")
+    void orphanRemovalTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        // 1-1. 1번 부서 조회하기
+        Department department = departmentRepository.findById(1L).orElseThrow();
+
+        // 1-2. 1번 부서 사원 목록 가져오기
+        List<Employee> employeeList = department.getEmployees();
+
+        // 1-3. 2번 사원 조회
+        Employee employee = employeeList.get(1);
+
+        //when - 테스트 상황
+
+        // 1-4. 부서목록에서 사원 삭제
+        employeeList.remove(employee);
+        // 2-1. 사원정보에서도 부서정보주소를 삭제해줘야 한다.
+        employee.setDepartment(null);
+
+        // 1-5. 갱신 반영 (삭제 정보가 갱신되지 않은 것을 확인할 수 있다.)
+        departmentRepository.save(department);
+
+        //then - 테스트 결과 단언
+    }
+
+    // 양방향 연관관계에서 리스트에 데이터 갱신 시 주의사항
+    @Test
+    @DisplayName("양방향 관계에서 리스트에 데이터를 추가하면 DB에도 INSERT 가 된다.")
+    void cascadePersistTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        // 1-1. 2번 부서를 조회한다.
+        Department department = departmentRepository.findById(2L).orElseThrow();
+
+        // 1-2. 새로운 사원 생성한다. (부서 일단 없음)
+        Employee employee = Employee.builder().name("뽀로로").build();
+
+        //when - 테스트 상황
+        // 1-3. 부서에 사원 추가한다.
+        department.addEmployee(employee);
+
+        //then - 테스트 결과 단언
+    }
 }
