@@ -21,3 +21,9 @@ select * from tbl_mtm_purchase;
 
 -- user 테이블 전체조회
 select * from tbl_mtm_user;
+
+-- Idol 테이블 전체조회
+select * from tbl_idol;
+
+-- Group 테이블 전체조회
+select * from tbl_group;
