@@ -34,6 +34,7 @@ public class Department {
           단순히 읽기전용 (조회전용)으로만 사용하는 것이다.
      */
     // 1-1. @OneToMany mappedBy 에는 상대방 엔터티의 @ManyToOne에 대응되는 필드명을 꼭 적어야 한다.
+    // 연관관계에서 mappedBy 가 없는 엔터티가 연관관계의 주인
     // 1-2. @OneToMany 의 fetch 기본값은 LAZY Loading
 
     // 3-1. orphanRemoval = true -- 고아객체(orphan) 들을 자동으로 제거하기 위한 기능
