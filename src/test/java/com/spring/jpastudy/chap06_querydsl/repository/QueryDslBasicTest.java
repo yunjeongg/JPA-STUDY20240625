@@ -31,6 +31,7 @@ class QueryDslBasicTest {
     @Autowired
     EntityManager em;
 
+    // JPAQueryFactory 는 JPA 엔터티를 대상으로 복잡한 쿼리를 간결하고 안전하게 작성할 수 있도록 도와준다.
     @Autowired
     JPAQueryFactory factory;
 
@@ -185,6 +186,9 @@ class QueryDslBasicTest {
 
 
         // 단일행 조회시 null safety를 위한 Optional로 받고 싶을 때
+        // Optional<String> optionalName = Optional.ofNullable(name);
+        // null 가능성이 있는 값을 Optional 객체로 감싸
+        // 값이 null 이면 빈 Optional 객체를, null이 아니면 해당 값을 포함하는 Optional 객체를 반환한다.
         Optional<Idol> foundIdolOptional = Optional.ofNullable(factory
                 .select(idol)
                 .from(idol)
@@ -195,5 +199,86 @@ class QueryDslBasicTest {
 
         System.out.println("\n\n=========== fetchOne (Optional) =============");
         System.out.println("foundIdol2 = " + foundIdol2);
+    }
+
+    @Test
+    @DisplayName("나이가 24세 이상인 아이돌 조회")
+    void testAgeGoe() {
+        // given
+        int ageThreshold = 24;
+
+        // when
+        List<Idol> result = factory
+                .selectFrom(idol) // selectFrom() - 해당 엔터티의 모든 컬럼을 조회할 때 사용
+                .where(idol.age.goe(ageThreshold))
+                .fetch();
+
+        // then
+        assertFalse(result.isEmpty());
+        for (Idol idol : result) {
+            System.out.println("\n\nIdol: " + idol);
+            assertTrue(idol.getAge() >= ageThreshold);
+        }
+    }
+
+    @Test
+    @DisplayName("이름에 '김'이 포함된 아이돌 조회")
+    void testNameContains() {
+        // given
+        String substring = "김";
+
+        // when
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(idol.idolName.contains(substring))
+                .fetch();
+
+        // then
+        assertFalse(result.isEmpty());
+        for (Idol idol : result) {
+            System.out.println("Idol: " + idol);
+            assertTrue(idol.getIdolName().contains(substring));
+        }
+    }
+
+    @Test
+    @DisplayName("나이가 20세에서 25세 사이인 아이돌 조회")
+    void testAgeBetween() {
+        // given
+        int ageStart = 20;
+        int ageEnd = 25;
+
+        // when
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(idol.age.between(ageStart, ageEnd))
+                .fetch();
+
+        // then
+        assertFalse(result.isEmpty());
+        for (Idol idol : result) {
+            System.out.println("Idol: " + idol);
+            assertTrue(idol.getAge() >= ageStart && idol.getAge() <= ageEnd);
+        }
+    }
+
+    @Test
+    @DisplayName("르세라핌 그룹에 속한 아이돌 조회하기")
+    void testGroupEquals() {
+        // given
+        String groupName = "르세라핌";
+
+        // when
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(idol.group.groupName.eq(groupName))
+                .fetch();
+
+        // then
+        assertFalse(result.isEmpty());
+        for (Idol idol : result) {
+            System.out.println("Idol: " + idol);
+            assertEquals(groupName, idol.getGroup().getGroupName());
+        }
     }
 }
