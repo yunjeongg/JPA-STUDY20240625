@@ -12,3 +12,12 @@ select * from tbl_emp;
 
 -- department 테이블 전체조회
 select * from tbl_dept;
+
+-- goods 테이블 전체조회
+select * from tbl_mtm_goods;
+
+-- purchase 테이블 전체조회 (구매이력)
+select * from tbl_mtm_purchase;
+
+-- user 테이블 전체조회
+select * from tbl_mtm_user;
