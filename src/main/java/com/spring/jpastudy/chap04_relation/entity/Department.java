@@ -41,10 +41,11 @@ public class Department {
     // ex) 부서엔터티의 사원목록에서 특정 사원을 제거할 경우 해당 사원은 사원엔터티의 데이터베이스에서도 삭제된다.
     // 3-2. cascade = CascadeType.ALL -- 부모 엔터티에 대한 모든 영속성 작업(저장, 업데이트, 삭제, 삭제후 재사용)이 자식엔터티에 전이된다.
     // 부모 엔터티를 처리할 때 자식엔터티도 자동으로 함께 처리되도록 하는 설정이다.
-    // PERSIST 부모가 갱신되면 자식도 같이 갱신된다.
-    // REMOVE 부모가 제거되면 자식도 같이 제거된다.
+    // PERSIST 부모가 갱신되면 자식도 같이 갱신된다. -> 부모의 리스트에 자식을 추가하거나 제거하면 DB에도 반영된다.
+    // REMOVE 부모가 제거되면 자식도 같이 제거된다. = ON DELETE CASCADE
     // MERGE 병합, REFRESH 새로고침, DETACH 준영속,
     // ALL 앞의 모든작업 전부 포함
+    // cascade = {CascadeType.PERSIST, CascadeType.REMOVE} // 실무에서는 ALL 을 사용하는것보다 사용할 것만 선택해서 사용하는게 좋다.
     @OneToMany(mappedBy = "department", orphanRemoval = true, cascade = CascadeType.ALL) // 상대방 엔터티에 이 엔터티가 저장된 필드명 적어주기
 
     // 2. @OneToMany 관계에서 상대방인 N쪽의 빈 컬렉션 객체를 초기생성하는 것이 좋다.

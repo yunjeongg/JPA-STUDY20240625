@@ -134,4 +134,21 @@ class DepartmentRepositoryTest {
 
         //then - 테스트 결과 단언
     }
+
+    @Test
+    @DisplayName("부서가 사라지면 해당 사원들도 함께 사라진다.")
+    void cascadeRemoveTest () {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        // 1-1. 2번 부서를 조회한다.
+        Department department = departmentRepository.findById(2L).orElseThrow();
+
+        //when - 테스트 상황
+        // 부서조회 -> 사원조회 -> 사원삭제 -> 부서삭제
+        departmentRepository.deleteById(department.getId()); // 주어진 ID 를 기반으로 엔터티 삭제 (ID가 없을 경우 예외처리 필요)
+        departmentRepository.delete(department); // 주어진 엔터티 객체를 기반으로 엔터티 삭제 (파라미터의 엔터티가 없을 경우 예외처리 필요)
+
+        //then - 테스트 결과 단언
+
+    }
 }
