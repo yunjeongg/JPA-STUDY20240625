@@ -1,5 +1,6 @@
 package com.spring.jpastudy.chap06_querydsl.repository;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.jpastudy.chap06_querydsl.entity.Group;
 import com.spring.jpastudy.chap06_querydsl.entity.Idol;
@@ -78,5 +79,59 @@ class QueryDslGroupingTest {
         //when - 테스트 상황
 
         //then - 테스트 결과 단언
+    }
+
+    @Test
+    @DisplayName("성별별, 그룹별로 그룹화하여 아이돌의 숫자가 3명이하인 그룹만 조회한다.")
+    void groupByGenderTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+
+        //when - 테스트 상황
+        // Tuple 는 JPA 에서 특정쿼리의 결과를 받기 위해 사용하는 인터페이스이다.
+        // JPQL이나 Criteria API를 통해 생성할 수 있다.
+        // 여러 필드를 갖는 복합적인 결과를 표현할 수 있다.
+        // Tuple 를 사용하면 쿼리 결과를 엔터티 클래스가 아닌 객체로 받을 수 있다.
+
+        // 1-1. 성별별로 그룹화하기
+        // idol.gender 는 새로 추가한 내용이므로 Gradle 에서 build - clear, other - compileQuerydsl 해야 한다.
+//        List<Tuple> idolList = factory.select(idol.gender, idol.count()).from(idol).groupBy(idol.gender).fetch();
+
+        // 2-1. 성별별, 그룹별로 그룹화하기 (Tuple 객체로 쿼리결과 받기)
+        List<Tuple> idolList = factory
+                                    .select(idol.group, idol.gender, idol.count()) // 그룹별, 성별별, 총 인원수
+                                    .from(idol)
+                                    .groupBy(idol.gender, idol.group)
+                                    .having(idol.count().loe(3)) // loe() 메소드는 주어진 값이 조건보다 같거나 작은 결과만 적용
+                                    .fetch();
+        /*
+            위의 코드는 아래의 쿼리문과 같다.
+            SELECT G.*, I.gender, COUNT(I.idol_id)
+            FROM tbl_idol I
+            JOIN tbl_group G
+            ON I.group_id = G.group_id
+            GROUP BY G.group_id, I.gender
+         */
+
+        //then - 테스트 결과 단언
+        System.out.println("\n\n");
+        // 1-1. 결과받기
+        // System.out.println("idolList = " + idolList);
+
+        // 2-2. 결과받기 Tuple 객체로 받은 값 추출하기
+        // 추출한 값은 원래의 엔터티 타입, 필드타입으로 받을 수 있다.
+
+        for (Tuple tuple : idolList) {
+
+            Group group = tuple.get(idol.group);
+            String gender = tuple.get(idol.gender);
+            Long count = tuple.get(idol.count());
+
+            System.out.println(
+                    String.format("\n그룹명 : %s, 성별: %s, 인원수: %d\n"
+                            , group.getGroupName(), gender, count)
+            );
+        }
+        System.out.println("\n\n");
     }
 }
