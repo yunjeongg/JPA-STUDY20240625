@@ -1,6 +1,8 @@
 package com.spring.jpastudy.chap06_querydsl.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.dsl.CaseBuilder;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.jpastudy.chap06_querydsl.entity.Group;
 import com.spring.jpastudy.chap06_querydsl.entity.Idol;
@@ -133,5 +135,89 @@ class QueryDslGroupingTest {
             );
         }
         System.out.println("\n\n");
+    }
+
+    @Test
+    @DisplayName("연령대별로 그룹화하여 아이돌 수를 조회한다.")
+    void ageGroupTest() {
+
+        /*
+            위의 코드는 아래의 쿼리문과 같다.
+            SELECT
+                     CASE age WHEN BETWEEN 10 AND 19 THEN 10
+                     CASE age WHEN BETWEEN 20 AND 29 THEN 20
+                     CASE age WHEN BETWEEN 30 AND 39 THEN 30
+                     END, COUNT(idol_id)
+            FROM tbl_idol
+            GROUP BY
+                     CASE age WHEN BETWEEN 10 AND 19 THEN 10
+                     CASE age WHEN BETWEEN 20 AND 29 THEN 20
+                     CASE age WHEN BETWEEN 30 AND 39 THEN 30
+                     END
+         */
+
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        // QueryDSL 로 CASE WHEN THEN 표현식 만들기
+        NumberExpression<Integer> ageGroupExpression = new CaseBuilder()
+                .when(idol.age.between(10, 19)).then(10) // 10과 19사이면 10
+                .when(idol.age.between(20, 29)).then(20) // 20과 29사이면 20
+                .when(idol.age.between(30, 39)).then(30) // 30과 39사이면 30
+                .otherwise(0); // 그게 아니면 0
+
+        //when - 테스트 상황
+        // 1-1. 연령대 별 총 인원수 조회하기
+        // List<Tuple> result = factory.select(ageGroupExpression, idol.count()).from(idol).groupBy(ageGroupExpression).fetch();
+
+        // 1-2.
+        List<Tuple> result = factory
+                                    .select(ageGroupExpression, idol.count())
+                                    .from(idol)
+                                    .groupBy(ageGroupExpression)
+                                    .having(idol.count().goe(2)) // 총 인원수가 2
+                                    .fetch(); // 5보다 큰 것
+
+        //then - 테스트 결과 단언
+        assertFalse(result.isEmpty());
+        for (Tuple tuple : result) {
+            int ageGroupValue = tuple.get(ageGroupExpression);
+            long count = tuple.get(idol.count());
+            
+            System.out.println("\n\nAge Group: " + ageGroupValue + "대, Count: " + count);
+        }
+    }
+
+    @Test
+    @DisplayName("그룹별 평균나이를 조회한다.")
+    void groupAverageAgeTest() {
+
+        /*
+            위의 코드는 아래의 쿼리문과 같다.
+            SELECT G.group_name, AVG(I.age)
+            FROM tbl_idol I // 나이 꺼내오기
+            JOIN tbl_group G // 그룹명 꺼내오기
+            ON I.group_id = G.group_id
+            GROUP By G.group_id
+            HAVING AVG(I.age) BETWEEN 20 AND 25
+         */
+
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        List<Tuple> result = factory
+                                    .select(idol.group.groupName, idol.age.avg())
+                                    .from(idol)
+                                    .groupBy(idol.group)
+                                    .having(idol.age.avg().between(20, 25)).fetch(); // 평균나이의 결과가 20~25 사이인 아이돌그룹
+
+        //when - 테스트 상황
+
+        //then - 테스트 결과 단언
+        assertFalse(result.isEmpty());
+        for (Tuple tuple : result) {
+            String groupName = tuple.get(idol.group.groupName);
+            double averageAge = tuple.get(idol.age.avg());
+
+            System.out.println("\n\nGroup: " + groupName + ", Average Age: " + averageAge);
+        }
     }
 }
