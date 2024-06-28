@@ -1,9 +1,11 @@
 package com.spring.jpastudy.chap06_querydsl.repository;
 
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.spring.jpastudy.chap06_querydsl.dto.GroupAverageAgeDto;
 import com.spring.jpastudy.chap06_querydsl.entity.Group;
 import com.spring.jpastudy.chap06_querydsl.entity.Idol;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,16 +13,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 import static com.spring.jpastudy.chap06_querydsl.entity.QIdol.idol;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @SpringBootTest
 @Transactional
@@ -218,6 +216,43 @@ class QueryDslGroupingTest {
             double averageAge = tuple.get(idol.age.avg());
 
             System.out.println("\n\nGroup: " + groupName + ", Average Age: " + averageAge);
+        }
+    }
+
+    @Test
+    @DisplayName("그룹별 평균나이를 조회한다. (결과 Tuple 대신 내가만든 커스텀 DTO 처리하기)")
+    void groupAverageAgeDtoTest() {
+
+        // Projections - 커스텀 DTO 를 포장해주는 객체
+        // 쿼리결과를 특정 타입으로 매핑할 때 사용하는 유틸리티 클래스이다.
+        // 이를 통해 쿼리결과를 DTO 로 쉽게 변환 가능하다.
+        // Projections 는 여러가지 정적 메소드를 제공해 다양한 방식으로 쿼리 결과를 매핑할 수 있다.
+        // 주요 메소드 constructor(), fields(), bean(), list(), map() 등
+
+        // constructor() 는 생성자를 사용해 결과를 매핑한다.
+        // 매핑할 DTO 에 생성자가 생성되어 있어야 한다.
+        // constructor(매핑할 dto명.class, 생성자 필드(계산식, 또는 포함식등))
+        List<GroupAverageAgeDto> result = factory
+                .select(
+                        Projections.constructor(
+                                GroupAverageAgeDto.class,
+                                idol.group.groupName,
+                                idol.age.avg()
+                        )
+                )
+                .from(idol)
+                .groupBy(idol.group)
+                .having(idol.age.avg().between(20, 25))
+                .fetch();
+
+        //then - 테스트 결과 단언
+        assertFalse(result.isEmpty());
+        for (GroupAverageAgeDto dto : result) {
+            String groupName = dto.getGroupName();
+            double averageAge = dto.getAverageAge();
+
+            System.out.println("\n\nGroup: " + groupName
+                    + ", Average Age: " + averageAge);
         }
     }
 }
