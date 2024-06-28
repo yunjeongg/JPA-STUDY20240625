@@ -118,4 +118,23 @@ class QueryDslSortTest {
         pagedIdols.forEach(System.out::println);
         System.out.println("\n\n\n");
     }
+
+    @Test
+    @DisplayName("Spring의 Page 인터페이스를 통한 페이징 처리")
+    void pagingWithJpaTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+        Pageable pageInfo = PageRequest.of(0, 2);
+
+        //when - 테스트 상황
+        Page<Idol> pagedIdols = idolRepository.findAllByPaging(pageInfo);
+
+        //then - 테스트 결과 단언
+        assertNotNull(pagedIdols);
+        assertEquals(2, pagedIdols.getSize());
+
+        System.out.println("\n\n\n");
+        pagedIdols.getContent().forEach(System.out::println);
+        System.out.println("\n\n\n");
+    }
 }
