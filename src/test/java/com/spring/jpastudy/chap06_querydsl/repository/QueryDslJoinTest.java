@@ -131,4 +131,26 @@ class QueryDslJoinTest {
         // inner join 의 경우 보통 쿼리문을 작성할 경우 innerJoin~ on~ 이런식으로 작성해줘야 하지만,
         // 여기서는 inner join 에 파라미터 두 개만 넣어주면 된다.
     }
+
+    @Test
+    @DisplayName("Left Outer Join")
+    void outerJoinTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+
+        //when - 테스트 상황
+        List<Tuple> result = factory.select(idol, QGroup.group).from(idol).leftJoin(idol.group, QGroup.group).fetch();
+
+        //then - 테스트 결과 단언
+        assertFalse(result.isEmpty());
+        for (Tuple tuple : result) {
+            Idol i = tuple.get(idol);
+            Group g = tuple.get(QGroup.group);
+
+            // 그룹이 있으면 그룹 가져오고, 없으면 솔로가수라고 작성하기
+            System.out.println("\nIdol: " + i.getIdolName() + ", Group: " + (g != null ? g.getGroupName() : "솔로가수"));
+
+            // 만약 NVL 같은 조건함수를 무조건 써야 하는 경우라면 native join 을 사용해야 하고, IdolRepositoryImpl 의 2-1 사용.
+        }
+    }
 }

@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.persistence.EntityManager;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +32,19 @@ public class IdolRepositoryImpl implements IdolCustomRepository{
 
     // 1-1.
     private final JdbcTemplate template;
+
+    // 2-1.
+    private final EntityManager em;
+
+    // native query 사용하고 싶을 경우
+    public void nativeQuery () {
+        String sql = "SELECT idol_id, NVL(group_id, '솔로가수') AS g_id" +
+                "FROM tbl_idol I" +
+                "LEFT JOIN tbl_group G" +
+                "ON I.group_id = G.group_id";
+
+        List resultList = em.createNativeQuery(sql).getResultList();
+    }
 
     @Override
     public List<Idol>  findAllSortedByName() {
