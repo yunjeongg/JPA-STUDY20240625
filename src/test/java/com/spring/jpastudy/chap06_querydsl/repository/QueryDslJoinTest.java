@@ -8,6 +8,8 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.jpastudy.chap06_querydsl.dto.GroupAverageAgeDto;
 import com.spring.jpastudy.chap06_querydsl.entity.Group;
 import com.spring.jpastudy.chap06_querydsl.entity.Idol;
+import com.spring.jpastudy.chap06_querydsl.entity.QGroup;
+import com.spring.jpastudy.chap06_querydsl.entity.QIdol;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -85,5 +87,48 @@ class QueryDslJoinTest {
         //when - 테스트 상황
 
         //then - 테스트 결과 단언
+    }
+
+    @Test
+    @DisplayName("내부 조인 예제")
+    void innerJoinTest() {
+        // gwt 패턴
+        //given - 테스트에 주어질 데이터
+
+        //when - 테스트 상황
+        // 아이돌과 그룹의 정보
+        // 1-1.
+        List<Idol> idolList = factory.select(QIdol.idol).from(QIdol.idol).fetch();
+
+        // 2-1-1.
+//        List<Tuple> tupleList = factory.select(QIdol.idol, QGroup.group).from(QIdol.idol).fetch();
+        // 2-2.
+        List<Tuple> tupleList = factory
+                .select(QIdol.idol, QGroup.group) // 아이돌 전부, 그룹의 전부 다 조회
+                .from(QIdol.idol)
+                .innerJoin(QIdol.idol.group, QGroup.group) // 2개를 넣어 on절 통합,
+                // innerJoin 의 첫번째 파라미터는 from절에있는 엔터티의 연관객체,
+                // innerJoin 의 두번째 파라미터는 실제로 조인할 엔터티
+                .fetch();
+
+        //then - 테스트 결과 단언
+        // 1-2.
+        for (Idol foundIdol : idolList) {
+            System.out.println(foundIdol);
+            System.out.println(foundIdol.getGroup());
+        }
+
+        // 2-1-2.   2-2-2.
+        for (Tuple tuple : tupleList) {
+            Idol tupleIdol = tuple.get(QIdol.idol);
+            Group tupleGroup = tuple.get(QGroup.group);
+            System.out.println(tupleIdol);
+            System.out.println(tupleGroup);
+        }
+
+        // 2-1. 처럼 다른 테이블의 자료를 가져올 경우 프로그램이 어떤 join을 할지 모르기 때문에 2-2.처럼 명시해주는 게 좋다.
+        // (이번 예제처럼 idol과 group 만 연관관계 있는 게 아니라 더 깊은 연관관계가 있을 수 있고, 연관관계가 더 존재할 수도 있기 때문에)
+        // inner join 의 경우 보통 쿼리문을 작성할 경우 innerJoin~ on~ 이런식으로 작성해줘야 하지만,
+        // 여기서는 inner join 에 파라미터 두 개만 넣어주면 된다.
     }
 }

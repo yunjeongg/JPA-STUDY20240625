@@ -23,9 +23,9 @@ public class Idol {
 
     private String gender; // 성별 추가
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY) // LAZY 를 사용할 경우 따로 요청하지 않으면 해당 정보를 제공하지 않는다.
     @JoinColumn(name = "group_id")
-    private Group group;
+    private Group group; // 그룹은 그룹의 모든 정보를 가지고 있지만
 
 
     public Idol(String idolName, int age, Group group) {
