@@ -9,6 +9,7 @@ import javax.persistence.PersistenceContext;
 
 // Spring 프레임워크에서 QueryDsl 을 사용하기 위한 설정클래스
 
+// 프로젝트에 QueryDSL 을 사용할 때 이 클래스 무조건 생성해야 한다.
 @Configuration // 1. 어노베이션을 통해 이 클래스가 설정정보를 포함하고 있음을 알려주기
 public class QueryDslConfig {
 
