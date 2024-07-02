@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.spring.jpastudy.chap06_querydsl.entity.QAlbum.*;
+import static com.spring.jpastudy.chap06_querydsl.entity.QGroup.group;
 import static com.spring.jpastudy.chap06_querydsl.entity.QIdol.idol;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -117,9 +119,9 @@ class QueryDslJoinTest {
 //        List<Tuple> tupleList = factory.select(QIdol.idol, QGroup.group).from(QIdol.idol).fetch();
         // 2-2.
         List<Tuple> tupleList = factory
-                .select(QIdol.idol, QGroup.group) // 아이돌 전부, 그룹의 전부 다 조회
+                .select(QIdol.idol, group) // 아이돌 전부, 그룹의 전부 다 조회
                 .from(QIdol.idol)
-                .innerJoin(QIdol.idol.group, QGroup.group) // 2개를 넣어 on절 통합,
+                .innerJoin(QIdol.idol.group, group) // 2개를 넣어 on절 통합,
                 // innerJoin 의 첫번째 파라미터는 from절에있는 엔터티의 연관객체,
                 // innerJoin 의 두번째 파라미터는 실제로 조인할 엔터티
                 .fetch();
@@ -134,7 +136,7 @@ class QueryDslJoinTest {
         // 2-1-2.   2-2-2.
         for (Tuple tuple : tupleList) {
             Idol tupleIdol = tuple.get(QIdol.idol);
-            Group tupleGroup = tuple.get(QGroup.group);
+            Group tupleGroup = tuple.get(group);
             System.out.println(tupleIdol);
             System.out.println(tupleGroup);
         }
@@ -152,18 +154,93 @@ class QueryDslJoinTest {
         //given - 테스트에 주어질 데이터
 
         //when - 테스트 상황
-        List<Tuple> result = factory.select(idol, QGroup.group).from(idol).leftJoin(idol.group, QGroup.group).fetch();
+        List<Tuple> result = factory.select(idol, group).from(idol).leftJoin(idol.group, group).fetch();
 
         //then - 테스트 결과 단언
         assertFalse(result.isEmpty());
         for (Tuple tuple : result) {
             Idol i = tuple.get(idol);
-            Group g = tuple.get(QGroup.group);
+            Group g = tuple.get(group);
 
             // 그룹이 있으면 그룹 가져오고, 없으면 솔로가수라고 작성하기
             System.out.println("\nIdol: " + i.getIdolName() + ", Group: " + (g != null ? g.getGroupName() : "솔로가수"));
 
             // 만약 NVL 같은 조건함수를 무조건 써야 하는 경우라면 native join 을 사용해야 하고, IdolRepositoryImpl 의 2-1 사용.
         }
+    }
+
+    @Test
+    @DisplayName("특정 그룹에 속한 아이돌의 정보 조회")
+    void pratice1Test() {
+        //given
+        String groupName = "아이브";
+        //when
+        List<Tuple> result = factory
+                .select(idol, group)
+                .from(idol)
+                .innerJoin(idol.group, group)
+                .where(group.groupName.eq(groupName))
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        result.forEach(tuple -> {
+            Idol foundIdol = tuple.get(idol);
+            Group foundGroup = tuple.get(group);
+            System.out.printf("\n# 이름: %s, 그룹명: %s\n\n"
+                    , foundIdol.getIdolName(), foundGroup.getGroupName());
+        });
+    }
+
+
+    @Test
+    @DisplayName("그룹별 평균 나이 계산")
+    void practice2Test() {
+        //given
+
+        //when
+        List<Tuple> result = factory
+                .select(group.groupName, idol.age.avg())
+                .from(idol)
+                .innerJoin(idol.group, group)
+                .groupBy(group.id)
+                .having(idol.age.avg().goe(22))
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        result.forEach(tuple -> {
+            String groupName = tuple.get(group.groupName);
+            double averageAge = tuple.get(idol.age.avg());
+            System.out.printf("\n# 그룹명: %s, 평균나이: %.2f\n\n"
+                    , groupName, averageAge);
+        });
+    }
+
+
+    @Test
+    @DisplayName("특정 연도에 발매된 앨범의 아이돌 정보 조회")
+    void practice3Test() {
+        //given
+        int year = 2022;
+        //when
+        List<Tuple> result = factory
+                .select(idol, album)
+                .from(idol)
+                .innerJoin(idol.group, group)
+                .innerJoin(group.albums, album)
+                .where(album.releaseYear.eq(year))
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        result.forEach(tuple -> {
+            Idol foundIdol = tuple.get(idol);
+            Album foundAlbum = tuple.get(album);
+            System.out.printf("\n# 아이돌명: %s, 그룹명: %s, " +
+                            "앨범명: %s, 발매연도: %d년\n\n"
+                    ,foundIdol.getIdolName(), foundIdol.getGroup().getGroupName()
+                    , foundAlbum.getAlbumName(), foundAlbum.getReleaseYear());
+        });
     }
 }
