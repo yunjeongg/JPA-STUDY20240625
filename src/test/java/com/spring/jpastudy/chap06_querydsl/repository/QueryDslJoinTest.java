@@ -6,10 +6,7 @@ import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.jpastudy.chap06_querydsl.dto.GroupAverageAgeDto;
-import com.spring.jpastudy.chap06_querydsl.entity.Group;
-import com.spring.jpastudy.chap06_querydsl.entity.Idol;
-import com.spring.jpastudy.chap06_querydsl.entity.QGroup;
-import com.spring.jpastudy.chap06_querydsl.entity.QIdol;
+import com.spring.jpastudy.chap06_querydsl.entity.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +26,7 @@ class QueryDslJoinTest {
 
     @Autowired IdolRepository idolRepository;
     @Autowired GroupRepository groupRepository;
+    @Autowired AlbumRepository  albumRepository;
 
     // JPAQueryFactory 는 JPA 엔터티를 대상으로 복잡한 쿼리를 간결하고 안전하게 작성할 수 있도록 도와준다.
     @Autowired
@@ -75,6 +73,21 @@ class QueryDslJoinTest {
         idolRepository.save(idol11);
         idolRepository.save(idol12);
         idolRepository.save(idol13);
+
+
+        Album album1 = new Album("MAP OF THE SOUL 7", 2020, bts);
+        Album album2 = new Album("FEARLESS", 2022, leSserafim);
+        Album album3 = new Album("UNFORGIVEN", 2023, bts);
+        Album album4 = new Album("ELEVEN", 2021, ive);
+        Album album5 = new Album("LOVE DIVE", 2022, ive);
+        Album album6 = new Album("OMG", 2023, newjeans);
+
+        albumRepository.save(album1);
+        albumRepository.save(album2);
+        albumRepository.save(album3);
+        albumRepository.save(album4);
+        albumRepository.save(album5);
+        albumRepository.save(album6);
 
     }
 
