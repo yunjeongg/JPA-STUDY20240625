@@ -2,10 +2,12 @@ package com.spring.jpastudy.chap06_querydsl.repository;
 
 import com.querydsl.core.Tuple;
 import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.spring.jpastudy.chap06_querydsl.entity.Album;
 import com.spring.jpastudy.chap06_querydsl.entity.Group;
 import com.spring.jpastudy.chap06_querydsl.entity.Idol;
+import com.spring.jpastudy.chap06_querydsl.entity.QAlbum;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -88,6 +90,7 @@ class QueryDslSubqueryTest {
         Album album4 = new Album("ELEVEN", 2021, ive);
         Album album5 = new Album("LOVE DIVE", 2022, ive);
         Album album6 = new Album("OMG", 2023, newjeans);
+        Album album7 = new Album("AFTER LIKE", 2022, ive);
 
         albumRepository.save(album1);
         albumRepository.save(album2);
@@ -95,6 +98,7 @@ class QueryDslSubqueryTest {
         albumRepository.save(album4);
         albumRepository.save(album5);
         albumRepository.save(album6);
+        albumRepository.save(album7);
     }
 
     @Test
@@ -134,6 +138,172 @@ class QueryDslSubqueryTest {
             System.out.println("\nIdol: " + i.getIdolName()
                     + ", Group: " + i.getGroup().getGroupName()
                     + ", Age: " + i.getAge());
+        }
+    }
+
+    @Test
+    @DisplayName("그룹별 가장 최근의 발매된 앨범 정보 조회")
+    void subqueryTest2() {
+
+        /*
+            SELECT G.group_name, A.album_name, A.release_year
+            FROM tbl_group G
+            INNER JOIN tbl_album A
+            ON G.group_id = A.group_id
+            WHERE A.album_id IN (
+                    SELECT S.album_id
+                    FROM tbl_album S
+                    WHERE S.group_id = A.group_id
+                        AND (
+                            SELECT MAX(release_year)
+                            FROM tbl_album
+                            WHERE S.group_id = A.group_id
+                        )
+            )
+         */
+
+        //given
+        QAlbum albumA = new QAlbum("albumA");
+        QAlbum albumS = new QAlbum("albumS");
+
+        //when
+        List<Tuple> result = factory
+                .select(group.groupName, albumA.albumName, albumA.releaseYear)
+                .from(group)
+                .innerJoin(group.albums, albumA)
+                .where(albumA.id.in(
+                        JPAExpressions
+                                .select(albumS.id)
+                                .from(albumS)
+                                .where(albumS.group.id.eq(albumA.group.id)
+                                        .and(albumS.releaseYear.eq(
+                                                JPAExpressions
+                                                        .select(albumS.releaseYear.max())
+                                                        .from(albumS)
+                                                        .where(albumS.group.id.eq(albumA.group.id))
+                                        ))
+                                )
+
+                ))
+                .distinct()
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        for (Tuple tuple : result) {
+            String groupName = tuple.get(group.groupName);
+            String albumName = tuple.get(albumA.albumName);
+            Integer releaseYear = tuple.get(albumA.releaseYear);
+
+            System.out.println("\nGroup: " + groupName
+                    + ", Album: " + albumName
+                    + ", Release Year: " + releaseYear);
+        }
+
+    }
+
+    @Test
+    @DisplayName("특정 연도에 발매된 앨범 수가 2개 이상인 그룹 조회")
+    void testFindGroupsWithMultipleAlbumsInYear() {
+
+        int targetYear = 2022;
+
+        QAlbum subAlbum = new QAlbum("subAlbum");
+
+        // 서브쿼리: 각 그룹별로 특정 연도에 발매된 앨범 수를 계산
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(subAlbum.group.id)
+                .from(subAlbum)
+                .where(subAlbum.releaseYear.eq(targetYear))
+                .groupBy(subAlbum.group.id)
+                .having(subAlbum.count().goe(2L));
+
+        // 메인쿼리: 서브쿼리의 결과와 일치하는 그룹 조회
+        List<Group> result = factory
+                .selectFrom(group)
+                .where(group.id.in(subQuery))
+                .fetch();
+
+        assertFalse(result.isEmpty());
+        for (Group g : result) {
+            System.out.println("\nGroup: " + g.getGroupName());
+        }
+    }
+
+    @Test
+    @DisplayName("그룹이 존재하지 않는 아이돌 조회")
+    void testFindIdolsWithoutGroup() {
+
+        // 서브쿼리: 아이돌이 특정 그룹에 속하는지 확인
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(group.id)
+                .from(group)
+                .where(group.id.eq(idol.group.id));
+
+        // 메인쿼리: 서브쿼리 결과가 존재하지 않는 아이돌 조회
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(subQuery.notExists())
+                .fetch();
+
+        assertFalse(result.isEmpty());
+        for (Idol i : result) {
+            System.out.println("\nIdol: " + i.getIdolName());
+        }
+    }
+
+    @Test
+    @DisplayName("아이브의 평균 나이보다 나이가 많은 여자 아이돌 조회")
+    void testFindMaleIdolsOlderThanGroupAverageAge() {
+        String groupName = "아이브";
+
+        JPQLQuery<Double> subQuery = JPAExpressions
+                .select(idol.age.avg())
+                .from(idol)
+                .where(idol.group.groupName.eq(groupName));
+
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(idol.age.gt(subQuery).and(idol.gender.eq("여")))
+                .fetch();
+
+        assertFalse(result.isEmpty());
+        for (Idol i : result) {
+            System.out.println("\nIdol: " + i.getIdolName() + ", Age: " + i.getAge());
+        }
+    }
+
+
+    @Test
+    @DisplayName("특정 연도에 발매된 앨범이 없는 그룹 조회")
+    void testFindGroupsWithoutAlbumsInYear() {
+        int targetYear = 2023;
+
+//        JPQLQuery<Long> subQuery = JPAExpressions
+//                .select(album.group.id)
+//                .from(album)
+//                .where(album.releaseYear.eq(targetYear));
+//
+//        List<Group> result = factory
+//                .selectFrom(group)
+//                .where(group.id.notIn(subQuery))
+//                .fetch();
+
+        JPQLQuery<Long> subQuery = JPAExpressions
+                .select(album.group.id)
+                .from(album)
+                .where(album.releaseYear.eq(targetYear)
+                        .and(album.group.id.eq(group.id)));
+
+        List<Group> result = factory
+                .selectFrom(group)
+                .where(subQuery.notExists())
+                .fetch();
+
+
+        assertFalse(result.isEmpty());
+        for (Group g : result) {
+            System.out.println("Group: " + g.getGroupName());
         }
     }
 }
