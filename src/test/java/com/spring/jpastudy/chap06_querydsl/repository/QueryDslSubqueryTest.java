@@ -107,4 +107,33 @@ class QueryDslSubqueryTest {
 
         //then - 테스트 결과 단언
     }
+
+    @Test
+    @DisplayName("특정 그룹의 평균 나이보다 많은 아이돌 조회")
+    void subqueryTest1() {
+        //given
+
+        //when
+        List<Idol> result = factory
+                .select(idol)
+                .from(idol)
+                .where(idol.age.gt(
+                                JPAExpressions // subquery 문을 JPAExpressions 안에 넣으면 된다.
+                                        .select(idol.age.avg())
+                                        .from(idol)
+                                        .innerJoin(idol.group, group)
+                                        .where(group.groupName.eq("르세라핌"))
+                        ).and(idol.group.isNotNull())
+                )
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+
+        for (Idol i : result) {
+            System.out.println("\nIdol: " + i.getIdolName()
+                    + ", Group: " + i.getGroup().getGroupName()
+                    + ", Age: " + i.getAge());
+        }
+    }
 }
