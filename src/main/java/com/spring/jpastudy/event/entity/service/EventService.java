@@ -19,8 +19,8 @@ public class EventService {
     private final EventRepository eventRepository;
 
     // 전체 조회 서비스
-    public List<Event> getEvents () {
-        return eventRepository.findAll();
+    public List<Event> getEvents (String sort) {
+        return eventRepository.findEvents(sort);
     }
 
     // 이벤트 등록
@@ -28,6 +28,6 @@ public class EventService {
         Event savedEvent = eventRepository.save(dto.toEntity());
         log.info("saved event: {}", savedEvent);
 
-        return getEvents();
+        return getEvents("date"); // 정렬방식 - 날짜정렬 
     }
 }

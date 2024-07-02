@@ -22,8 +22,8 @@ public class EventController {
 
     // 전체조회 요청
     @GetMapping
-    public ResponseEntity<?> getList () {
-        List<Event> events = eventService.getEvents();
+    public ResponseEntity<?> getList (String sort) {
+        List<Event> events = eventService.getEvents(sort);
 
         return ResponseEntity.ok().body(events);
     }
@@ -34,4 +34,5 @@ public class EventController {
         List<Event> events = eventService.saveEvent(dto);
         return ResponseEntity.ok().body(events);
     }
+
 }
