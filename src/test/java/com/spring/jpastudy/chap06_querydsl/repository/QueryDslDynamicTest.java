@@ -111,4 +111,85 @@ class QueryDslDynamicTest {
 
         //then - 테스트 결과 단언
     }
+
+    @Test
+    @DisplayName("동적 쿼리를 사용한 간단한 아이돌 조회")
+    void dynamicTest1() {
+        //given
+
+        String name = "김채원";
+//        name = null;
+        String genderParam = "여";
+//        genderParam = null;
+
+        Integer minAge = 20;
+        Integer maxAge = 25;
+
+        // 동적 쿼리를 위한 BooleanBuilder
+        BooleanBuilder booleanBuilder = new BooleanBuilder();
+
+        if (name != null) {
+            booleanBuilder.and(idol.idolName.eq(name));
+        }
+        if (genderParam != null) {
+            booleanBuilder.and(idol.gender.eq(genderParam));
+        }
+        if (minAge != null) {
+            booleanBuilder.and(idol.age.goe(minAge));
+        }
+        if (maxAge != null) {
+            booleanBuilder.and(idol.age.loe(maxAge));
+        }
+
+        //when
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .where(booleanBuilder)
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        for (Idol i : result) {
+            System.out.println("\nIdol: " + i.getIdolName() + ", Gender: " + i.getGender());
+        }
+    }
+
+    @Test
+    @DisplayName("동적 정렬을 사용한 아이돌 조회")
+    void dynamicTest2() {
+        //given
+        String sortBy = "idolName"; // 나이, 이름, 그룹명
+        boolean ascending = false; // 오름차(true), 내림차(false)
+
+        //when
+        OrderSpecifier<?> specifier = null;
+        // 동적 정렬 조건 생성
+        switch (sortBy) {
+            case "age":
+                specifier = ascending ? idol.age.asc() : idol.age.desc();
+                break;
+            case "idolName":
+                specifier = ascending ? idol.idolName.asc() : idol.idolName.desc();
+                break;
+            case "groupName":
+                specifier = ascending ? idol.group.groupName.asc() : idol.group.groupName.desc();
+                break;
+        }
+
+        List<Idol> result = factory
+                .selectFrom(idol)
+                .orderBy(specifier)
+                .fetch();
+
+        //then
+        assertFalse(result.isEmpty());
+        for (Idol i : result) {
+            System.out.println("\nIdol: " + i.getIdolName()
+                    + ", Gender: "
+                    + i.getGender()
+                    + ", age: "
+                    + i.getAge()
+            );
+        }
+    }
 }
