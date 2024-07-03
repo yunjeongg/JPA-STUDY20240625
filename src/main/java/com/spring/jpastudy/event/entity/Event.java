@@ -32,10 +32,10 @@ public class Event {
     @Column(name = "ev_image_path")
     private String image; // 이벤트 메인 이미지 경로
 
-    // 이벤트가 생긴 날짜가 아닌 실제 진행하는 날짜가 필요하기 때문에 자동등록 안됨
     @Column(name = "ev_start_date")
     private LocalDate date; // 이벤트 행사 시작 날짜
 
     @CreationTimestamp
     private LocalDateTime createdAt; // 이벤트 등록 날짜
+
 }

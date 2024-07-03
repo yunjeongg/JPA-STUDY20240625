@@ -14,12 +14,9 @@ import java.time.LocalDate;
 @Builder
 public class EventDetailDto {
 
-    // 클라이언트에 줄 때 id 는 숫자타입에서 문자타입으로 변경해서 줘
     private String id;
     private String title;
-    // 클라이언트에서 화면 랜더링 시 description 는 필요없어
-
-    @JsonFormat(pattern = "yyyy년 mm월 dd일")
+    @JsonFormat(pattern = "yyyy년 MM월 dd일")
     private LocalDate startDate;
 
     @JsonProperty(value = "img-url")

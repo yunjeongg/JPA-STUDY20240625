@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Getter @Setter @ToString
 @EqualsAndHashCode
@@ -13,8 +14,6 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class EventSaveDto {
-
-    // 아이디는 자동 등록되기때문에 써주지 않는다.
 
     private String title;
     private String desc;

@@ -6,7 +6,11 @@ import java.util.List;
 
 public interface EventRepositoryCustom {
 
-    List<Event> findEvents (String sort);
+    List<Event> findEvents(String sort);
 
-    // Join, Group By, 등등..
+    // ...
+
+    // ...
+
+    // ...
 }
