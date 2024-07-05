@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/events")
@@ -27,9 +29,13 @@ public class EventController {
     @GetMapping("/page/{pageNo}")
     public ResponseEntity<?> getList(
                                     @RequestParam(required = false) String sort,
-                                    @PathVariable int pageNo) {
+                                    @PathVariable int pageNo) throws InterruptedException {
 
-        List<EventDetailDto> events = eventService.getEvents(pageNo, sort);
+        if (sort == null) {
+            return ResponseEntity.badRequest().body("sort 파라미터가 없습니다.");
+        }
+
+        Map<String, Object> events = eventService.getEvents(pageNo, sort);
 
         // 의도적으로 2초간의 로딩을 설정
         Thread.sleep(2000);
