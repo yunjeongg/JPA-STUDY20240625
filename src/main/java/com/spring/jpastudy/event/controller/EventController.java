@@ -22,18 +22,23 @@ public class EventController {
     private final EventService eventService;
 
     // 전체 조회 요청
-    @GetMapping
+    @GetMapping("/page/{pageNo}")
     public ResponseEntity<?> getList(
-            @RequestParam(required = false, defaultValue = "date") String sort) {
-        List<EventDetailDto> events = eventService.getEvents(sort);
+                                    @RequestParam(required = false) String sort,
+                                    @PathVariable int pageNo) {
+
+        List<EventDetailDto> events = eventService.getEvents(pageNo, sort);
         return ResponseEntity.ok().body(events);
     }
+
+    // PostMan
+    // Get, http://localhost:8282/events/page/2?sort=date (2가 페이지번호, sort=date 필수)
 
     // 등록 요청
     @PostMapping
     public ResponseEntity<?> register(@RequestBody EventSaveDto dto) {
-        List<EventDetailDto> events = eventService.saveEvent(dto);
-        return ResponseEntity.ok().body(events);
+        eventService.saveEvent(dto);
+        return ResponseEntity.ok().body("event saved");
     }
 
     // 단일 조회 요청
