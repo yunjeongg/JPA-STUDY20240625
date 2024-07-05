@@ -66,6 +66,24 @@ public class EventController {
     }
 
     // PostMan
-    // Delete, http://localhost:8282/events/7 (url id 7번 게시글 삭제)
+    // DELETE, http://localhost:8282/events/7 (url id 7번 게시글 삭제)
 
+    // 수정요청
+    @PatchMapping("/{eventId}")
+    public ResponseEntity<?> modity(@RequestBody EventSaveDto dto, @PathVariable Long eventId) {
+        eventService.modifyEvent(dto, eventId);
+
+        return ResponseEntity.ok().body("event modified!!");
+    }
+
+    // PostMan
+    // PATCH, http://localhost:8282/events/6 (url id 7번 게시글 수정)
+    /*
+    {
+        "title": "농부 이벤트",
+            "desc": "농부 이벤트입니다. 건강하겠지?",
+            "imageUrl": "https://www.nhis.or.kr/static/alim/paper/oldpaper/202109/assets/images/sub/event01_mo.jpg",
+            "beginDate": "2024-12-31"
+    }
+    */
 }
