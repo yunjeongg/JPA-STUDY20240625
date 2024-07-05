@@ -56,4 +56,16 @@ public class EventController {
     // PostMan
     // Get, http://localhost:8282/events/2 - 건강건강이벤트
 
+    // 삭제요청
+    @DeleteMapping("/{eventId}")
+    public ResponseEntity<?> delete (@PathVariable Long eventId) {
+
+        eventService.deleteEvent(eventId);
+
+        return ResponseEntity.ok().body("event deleted");
+    }
+
+    // PostMan
+    // Delete, http://localhost:8282/events/7 (url id 7번 게시글 삭제)
+
 }
